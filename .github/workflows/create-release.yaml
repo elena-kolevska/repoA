@@ -41,3 +41,11 @@ jobs:
           git add config/dapr_runtime.version
           git commit -m "Update dapr_runtime.version to ${{ inputs.rel_version }}"
           git push
+      - name: Trigger deploy-longhaul-release
+        run: |
+          curl -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer ${{ steps.get_workflow_token.outputs.token }}" \
+          https://api.github.com/repos/elena-kolevska/repoB/dispatches \
+          -d '{"event_type": "trigger-longhaul-release"}'
+
