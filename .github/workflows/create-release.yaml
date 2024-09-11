@@ -28,7 +28,7 @@ jobs:
           path: repoB
       
       - name: Parse release version and set REL_VERSION and LATEST_RELEASE
-        run: python ./.github/scripts/get_release_version.py ${{ github.event_name }}
+        run: python test-infra/.github/scripts/get_release_version.py ${{ github.event_name }}
 
       - name: Update Version in repoB
         run: |
