@@ -32,8 +32,8 @@ jobs:
 
       - name: Update Version in repoB
         run: |
-          echo "${{ env.REL_VERSION }}"
-          echo "${{ REL_VERSION }}"
+          echo "Env rel version: ${{ env.REL_VERSION }}"
+          echo "Rel version: ${REL_VERSION}"
           # echo "${{ env.REL_VERSION }}" > test-infra/config/dapr_runtime.version
           # echo "${{ inputs.rel_version }}" > repoB/config/dapr_runtime.version
 
