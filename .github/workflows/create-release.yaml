@@ -20,6 +20,13 @@ jobs:
           private-key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           repositories: "repoB"
 
+      - name: Checkout repoA
+        uses: actions/checkout@v3
+        with:
+          repository: elena-kolevska/repoA
+          token: ${{ steps.get_workflow_token.outputs.token }}  # Use the generated token
+          path: repoA
+
       - name: Checkout repoB
         uses: actions/checkout@v3
         with:
@@ -28,7 +35,7 @@ jobs:
           path: repoB
       
       - name: Parse release version and set REL_VERSION and LATEST_RELEASE
-        run: python test-infra/.github/scripts/get_release_version.py ${{ github.event_name }}
+        run: python repoA/.github/scripts/get_release_version.py ${{ github.event_name }}
 
       - name: Update Version in repoB
         run: |
