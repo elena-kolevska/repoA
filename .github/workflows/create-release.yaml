@@ -18,6 +18,7 @@ jobs:
         with:
           app-id: ${{ secrets.APPLICATION_ID }}
           private-key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          repositories: "repoB"
 
       - name: Checkout repoB
         uses: actions/checkout@v3
