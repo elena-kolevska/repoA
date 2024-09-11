@@ -22,7 +22,12 @@ import datetime
 gitRef = os.getenv("GITHUB_REF")
 tagRefPrefix = "refs/tags/v"
 
+print("GITHUB_REF: {}".format(gitRef))
+
 with open(os.getenv("GITHUB_ENV"), "a") as githubEnv:
+
+    print("githubEnv: {}".format(githubEnv))
+    print("sys.argv: {}".format(sys.argv))
 
     if "schedule" in sys.argv:
         dateTag = datetime.datetime.utcnow().strftime("%Y-%m-%d")
