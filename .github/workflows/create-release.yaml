@@ -28,20 +28,32 @@ jobs:
       
       - name: Parse release version and set REL_VERSION and LATEST_RELEASE
         run: python ./.github/scripts/get_release_version.py ${{ github.event_name }}
+      
+      - name: Install Python Dependencies
+        run: |
+          pip install packaging
+          
+      - name: Compare versions and determine if update is required
+        id: compare_versions
+        run: |
+          EXISTING_VERSION=$(cat repoB/config/dapr_runtime.version)
+          echo "Existing version: $EXISTING_VERSION"
+          echo "New version: ${{ env.REL_VERSION }}"
+          python ./.github/scripts/compare_versions.py "${{ env.REL_VERSION }}" "$EXISTING_VERSION"
 
       - name: Update Version in repoB
+        if: env.UPDATE_REQUIRED == 'true'
         run: |
-          echo "Env rel version: ${{ env.REL_VERSION }}"
           echo "Rel version: ${REL_VERSION}"
           # echo "${{ env.REL_VERSION }}" > test-infra/config/dapr_runtime.version
-          # echo "${{ inputs.rel_version }}" > repoB/config/dapr_runtime.version
+          echo "${{ env.REL_VERSION }}" > repoB/config/dapr_runtime.version
 
-      # - name: Commit and Push Changes to repoB
-      #   run: |
-      #     cd repoB
-      #     git config --global user.name "github-actions"
-      #     git config --global user.email "github-actions@github.com"
-      #     git add config/dapr_runtime.version
-      #     git commit -m "Update dapr_runtime.version to ${{ inputs.rel_version }}"
-      #     git push
-
+      - name: Commit and Push Changes to repoB
+        if: env.UPDATE_REQUIRED == 'true'
+        run: |
+          cd repoB
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add config/dapr_runtime.version
+          git commit -m "Update dapr_runtime.version to ${{ env.REL_VERSION }}"
+          git push
