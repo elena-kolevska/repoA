@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  update-repoB:
+  update-longhauls:
+    name: Update the dapr version in longhaul tests
+    # needs: helmpublish
     runs-on: ubuntu-latest
-
+    
+    env:
+      LONG_HAUL_REPO: repoB
     steps:
       - name: Get Token
         id: get_workflow_token
@@ -14,48 +18,42 @@ jobs:
         with:
           app-id: ${{ secrets.APPLICATION_ID }}
           private-key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-          repositories: "repoB"
-
+          repositories: ${{ env.LONG_HAUL_REPO }}
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
         with:
           path: dapr
-
-      - name: Checkout repoB
+      - name: Checkout the longhaul tests repo
         uses: actions/checkout@v3
         with:
-          repository: elena-kolevska/repoB
+          repository: elena-kolevska/${{ env.LONG_HAUL_REPO }}
           token: ${{ steps.get_workflow_token.outputs.token }}  # Use the generated token
-          path: repoB
-      
-      - name: Parse release version and set REL_VERSION and LATEST_RELEASE
-        run: python dapr/.github/scripts/get_release_version.py ${{ github.event_name }}
-      
+          path: ${{ env.LONG_HAUL_REPO }}
       - name: Install Python Dependencies
         run: |
           pip install packaging
-          
-      - name: Compare versions and determine if update is required
+      - name: Parse release version and set REL_VERSION and LATEST_RELEASE
+        run: python dapr/.github/scripts/get_release_version.py ${{ github.event_name }}
+
+      - name: Compare versions and determine if update of long haul tests is required
         id: compare_versions
         run: |
-          EXISTING_VERSION=$(cat repoB/config/dapr_runtime.version)
-          echo "Existing version: $EXISTING_VERSION"
+          EXISTING_VERSION=$(cat "${{ env.longhaul_repo }}/config/dapr_runtime.version")
+          echo "Existing version in long haul tests: $EXISTING_VERSION"
           echo "New version: ${{ env.REL_VERSION }}"
           python dapr/.github/scripts/compare_versions.py "${{ env.REL_VERSION }}" "$EXISTING_VERSION"
 
-      - name: Update Version in repoB
-        if: env.UPDATE_REQUIRED == 'true'
+      - name: Update dapr runtime version in the long haul tests repo
+        if: env.VERSION_UPDATE_REQUIRED == 'true'
         run: |
-          echo "Rel version: ${REL_VERSION}"
-          # echo "${{ env.REL_VERSION }}" > test-infra/config/dapr_runtime.version
-          echo "${{ env.REL_VERSION }}" > repoB/config/dapr_runtime.version
+          echo "${REL_VERSION}" > ${{ env.LONG_HAUL_REPO }}/config/dapr_runtime.version
 
       - name: Commit and Push Changes to repoB
-        if: env.UPDATE_REQUIRED == 'true'
+        if: env.VERSION_UPDATE_REQUIRED == 'true'
         run: |
-          cd repoB
+          cd ${{ env.LONG_HAUL_REPO }}
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add config/dapr_runtime.version
-          git commit -m "Update dapr_runtime.version to ${{ env.REL_VERSION }}"
+          git commit -m "Updates dapr runtime version to ${env.REL_VERSION}"
           git push
