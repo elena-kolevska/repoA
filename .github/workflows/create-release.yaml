@@ -38,7 +38,7 @@ jobs:
       - name: Compare versions and determine if update of long haul tests is required
         id: compare_versions
         run: |
-          EXISTING_VERSION=$(cat "${{ env.longhaul_repo }}/config/dapr_runtime.version")
+          EXISTING_VERSION=$(cat "${{ env.LONG_HAUL_REPO }}/config/dapr_runtime.version")
           echo "Existing version in long haul tests: $EXISTING_VERSION"
           echo "New version: ${{ env.REL_VERSION }}"
           python dapr/.github/scripts/compare_versions.py "${{ env.REL_VERSION }}" "$EXISTING_VERSION"
